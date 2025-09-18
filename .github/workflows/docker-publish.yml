@@ -27,7 +27,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: shwetatiwari501
-          password: dckr_pat_sfOc8HXitIybUov5dht8IZwb13I
+          password: dckr_pat_C9NEWmi-HkDq2nnJMLBOPUGKiwk
 
       # 5. Build and push Docker image
       - name: Build and push
