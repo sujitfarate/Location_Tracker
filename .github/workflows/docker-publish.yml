@@ -8,25 +8,32 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
     steps:
+      # 1. Checkout your repository
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up QEMU (for multiarch, optional)
+      # 2. Set up QEMU (optional, needed for multi-arch builds)
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
+      # 3. Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # 4. Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: shwetatiwari501
           password: dckr_pat_sfOc8HXitIybUov5dht8IZwb13I
 
+      # 5. Build and push Docker image
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: .                 # Root of repo
+          file: ./Dockerfile         # Dockerfile in root
           push: true
           tags: shwetatiwari501/myapp:latest
