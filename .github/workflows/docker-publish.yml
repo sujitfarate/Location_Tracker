@@ -1,4 +1,4 @@
-name: Deploy to Docker Nginx
+name: Deploy Node.js App to Docker Nginx
 
 on:
   push:
@@ -7,20 +7,30 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted   # Must be your local machine with Docker running
 
     steps:
       # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Copy app files into the Nginx container
+      # 2️⃣ Install dependencies (optional if using build step)
+      - name: Install Node dependencies
+        run: |
+          npm install
+
+      # 3️⃣ Build app (optional, only if you have a build step)
+      # Uncomment if needed
+      # - name: Build app
+      #   run: |
+      #     npm run build
+
+      # 4️⃣ Copy public files to Nginx container
       - name: Copy files to Nginx
         run: |
-          # Replace 'mysite' with your build folder if using React/Vite etc.
-          docker cp ./mysite/. mysite-nginx:/usr/share/nginx/html
+          docker cp ./public/. mysite-nginx:/usr/share/nginx/html
 
-      # 3️⃣ Reload Nginx inside the container
+      # 5️⃣ Reload Nginx to serve new files
       - name: Reload Nginx
         run: |
           docker exec mysite-nginx nginx -s reload
