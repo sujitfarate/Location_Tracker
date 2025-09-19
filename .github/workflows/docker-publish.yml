@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted   # Your PC with Docker
+    runs-on: ubuntu-latest   # Your PC with Docker
 
     steps:
     - name: Checkout repository
