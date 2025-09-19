@@ -1,33 +1,39 @@
-name: Deploy Node.js Express App to Docker
+name: Deploy Node.js behind Nginx
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout code
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-    # Step 2: Build Docker image
-    - name: Build Docker image
-      run: |
-        docker build -t mynode-app .
+    # Build Node.js image
+    - run: docker build -t mynode-app .
 
-    # Step 3: Stop and remove old container if it exists
-    - name: Stop old container if exists
-      run: |
+    # Stop/remove old Node container
+    - run: |
         if [ $(docker ps -aq -f name=mynode-app) ]; then
           docker stop mynode-app
           docker rm mynode-app
         fi
 
-    # Step 4: Run new container
-    - name: Run Docker container
-      run: |
-        docker run -d -p 3000:3000 --name mynode-app mynode-app
+    # Run Node.js container
+    - run: docker run -d --name mynode-app mynode-app
+
+    # Stop/remove old Nginx container
+    - run: |
+        if [ $(docker ps -aq -f name=mynode-nginx) ]; then
+          docker stop mynode-nginx
+          docker rm mynode-nginx
+        fi
+
+    # Run Nginx container (reverse proxy to Node)
+    - run: |
+        docker run -d -p 8080:80 \
+          --link mynode-app:mynode-app \
+          -v /path/to/nginx.conf:/etc/nginx/conf.d/default.conf:ro \
+          --name mynode-nginx nginx
