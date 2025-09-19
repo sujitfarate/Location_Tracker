@@ -1,85 +1,143 @@
-# # # Use official Node.js image
-# # FROM node:18
+# # # # Use official Node.js image
+# # # FROM node:18
 
-# # # Create app directory
-# # WORKDIR /usr/src/app
+# # # # Create app directory
+# # # WORKDIR /usr/src/app
 
-# # # Copy package.json and package-lock.json
+# # # # Copy package.json and package-lock.json
+# # # COPY package*.json ./
+
+# # # # Install dependencies
+# # # RUN npm install
+
+# # # # Copy rest of the application code
+# # # COPY . .
+
+# # # # Expose port your server runs on
+# # # EXPOSE 3000
+
+# # # # Start the server
+# # # # CMD ["node", "server.js"]
+# # # # Use official Nginx image
+# # # FROM nginx:latest
+
+# # # # Remove default Nginx static files
+# # # RUN rm -rf /usr/share/nginx/html/*
+
+# # # # Copy your app files into Nginx folder
+# # # # Change ./public to your static folder (React: build/, Node.js: public/)
+# # # COPY ./public /usr/share/nginx/html
+
+
+
+# # # -------- Stage 1: Build the app --------
+# # FROM node:18 AS build
+# # WORKDIR /app
+
+# # # Copy package files and install dependencies
 # # COPY package*.json ./
-
-# # # Install dependencies
 # # RUN npm install
 
-# # # Copy rest of the application code
+# # # Copy rest of the code and build
 # # COPY . .
+# # RUN npm run build   # make sure your build output goes to 'build/' folder
 
-# # # Expose port your server runs on
-# # EXPOSE 3000
-
-# # # Start the server
-# # # CMD ["node", "server.js"]
-# # # Use official Nginx image
+# # # -------- Stage 2: Serve with Nginx --------
 # # FROM nginx:latest
 
-# # # Remove default Nginx static files
+# # # Remove default Nginx files
 # # RUN rm -rf /usr/share/nginx/html/*
 
-# # # Copy your app files into Nginx folder
-# # # Change ./public to your static folder (React: build/, Node.js: public/)
-# # COPY ./public /usr/share/nginx/html
+# # # Copy built app from previous stage
+# # COPY --from=build /app/build /usr/share/nginx/html
+
+# # # Expose port 80
+# # EXPOSE 80
+
+# # # Start Nginx
+# # CMD ["nginx", "-g", "daemon off;"]
+
+# # # Expose port 80
+# # EXPOSE 80
+
+# # # Start Nginx
+# # CMD ["nginx", "-g", "daemon off;"]
 
 
+# # Stage 1: Build React app
+# FROM node:18 as build
 
-# # -------- Stage 1: Build the app --------
-# FROM node:18 AS build
 # WORKDIR /app
 
-# # Copy package files and install dependencies
 # COPY package*.json ./
-# RUN npm install
+# RUN npm install            # Do NOT use --production, so devDependencies like react-scripts are installed
 
-# # Copy rest of the code and build
 # COPY . .
-# RUN npm run build   # make sure your build output goes to 'build/' folder
+# RUN npm run build          # Now it works
 
-# # -------- Stage 2: Serve with Nginx --------
+# # Stage 2: Serve with Nginx
 # FROM nginx:latest
 
-# # Remove default Nginx files
-# RUN rm -rf /usr/share/nginx/html/*
-
-# # Copy built app from previous stage
 # COPY --from=build /app/build /usr/share/nginx/html
-
-# # Expose port 80
 # EXPOSE 80
 
-# # Start Nginx
-# CMD ["nginx", "-g", "daemon off;"]
-
-# # Expose port 80
-# EXPOSE 80
-
-# # Start Nginx
 # CMD ["nginx", "-g", "daemon off;"]
 
 
-# Stage 1: Build React app
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -------- Stage 1: Build React app --------
 FROM node:18 as build
 
 WORKDIR /app
 
+# Copy package.json and package-lock.json first
 COPY package*.json ./
-RUN npm install            # Do NOT use --production, so devDependencies like react-scripts are installed
 
+# Force install devDependencies (react-scripts, etc.)
+ENV NODE_ENV=development
+RUN npm install --include=dev
+
+# Copy the rest of your project
 COPY . .
-RUN npm run build          # Now it works
 
-# Stage 2: Serve with Nginx
+# Build React app → generates /build folder
+RUN npm run build
+
+# -------- Stage 2: Serve with Nginx --------
 FROM nginx:latest
 
+# Remove default nginx static files
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy React build files into Nginx
 COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80
 EXPOSE 80
 
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
 
