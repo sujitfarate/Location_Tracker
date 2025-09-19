@@ -1,20 +1,20 @@
-# Use official Node.js LTS image
-FROM node:20-alpine
+# Use official Node.js image
+FROM node:18
 
-# Set working directory inside container
-WORKDIR /app
+# Create app directory
+WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json first (for caching)
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --production
+RUN npm install
 
-# Copy the rest of your project files
+# Copy rest of the application code
 COPY . .
 
-# Expose the port your server listens on (change if different)
+# Expose port your server runs on
 EXPOSE 3000
 
-# Start your server
+# Start the server
 CMD ["node", "server.js"]
