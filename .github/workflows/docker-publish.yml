@@ -7,24 +7,27 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest   # Your PC with Docker
+    runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout code
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Step 1: Build Docker image
+    # Step 2: Build Docker image
     - name: Build Docker image
       run: |
         docker build -t mynode-app .
 
-    # Step 2: Stop existing container (if any)
-    - name: Stop existing container
+    # Step 3: Stop and remove old container if it exists
+    - name: Stop old container if exists
       run: |
-        docker stop mynode-app || true
-        docker rm mynode-app || true
+        if [ $(docker ps -aq -f name=mynode-app) ]; then
+          docker stop mynode-app
+          docker rm mynode-app
+        fi
 
-    # Step 3: Run new container
+    # Step 4: Run new container
     - name: Run Docker container
       run: |
         docker run -d -p 3000:3000 --name mynode-app mynode-app
