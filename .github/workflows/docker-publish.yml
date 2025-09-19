@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted   # Must be your local machine with Docker running
+    runs-on: ubuntu-latest   # Must be your local machine with Docker running
 
     steps:
       # 1️⃣ Checkout code
